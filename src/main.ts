@@ -4,6 +4,7 @@ import HtmlButtonResponsePlugin from "@jspsych/plugin-html-button-response";
 import AudioButtonResponsePlugin from "@jspsych/plugin-audio-button-response";
 import VideoButtonResponsePlugin from "@jspsych/plugin-video-button-response";
 import SurveyHtmlFormPlugin from "@jspsych/plugin-survey-html-form";
+import PreloadPlugin from "@jspsych/plugin-preload";
 
 import "jspsych/css/jspsych.css";
 import "./style.css";
@@ -69,13 +70,17 @@ function getLikertHtml(choices: string[]) {
   // TODO: check choices length
   const html = `
   <div class="choices">
-    ${choices.map((choice, i) => `
-      <label class="choice">
-        <input type="radio" name="choice" value="${i}" required>
-        <span>${choice}</span>
-        <img src="${`images/likert_${i}.png`}">
-      </label>
-    `).join("")}
+    ${choices.map((choice, i) => {
+      const image = `images/likert_${i}.png`;
+      preloadTrial.images.push(image);
+      return `
+        <label class="choice">
+          <input type="radio" name="choice" value="${i}" required>
+          <span>${choice}</span>
+          <img src="${image}">
+        </label>
+      `;
+    }).join("")}
   </div>
   `;
   return html;
@@ -161,6 +166,8 @@ Cuando respondas mis preguntas, quiero que pienses en las cosas que sí tienen u
     const questions = QUESTIONS[block_name];
     for (let i = 0; i < questions.length; i++) {
       const question = questions[i];
+      const audioPath = `audio/inthum/${block_name}_${i}.mp3`;
+      preloadTrial.audio.push(audioPath);
       const trial = {
         type: SurveyHtmlFormPlugin,
         preamble: `<p>${question}</p>`,
@@ -183,7 +190,7 @@ Cuando respondas mis preguntas, quiero que pienses en las cosas que sí tienen u
           radioInputs.forEach(input => input.disabled = true);
           if (submitButton) submitButton.disabled = true;
 
-          const audio = await jsPsych.pluginAPI.getAudioPlayer(`audio/inthum/${block_name}_${i}.mp3`);
+          const audio = await jsPsych.pluginAPI.getAudioPlayer(audioPath);
           audio.play();
           audio.addEventListener("ended", () => {
             radioInputs.forEach(input => input.disabled = false);
@@ -337,6 +344,17 @@ const audioTestLoop = {
   }
 }
 
+const preloadTrial = {
+  type: PreloadPlugin,
+  auto_preload: true,
+  images: [] as string[],
+  audio: [] as string[],
+  video: [] as string[],
+  on_start: (trial: any) => {
+    console.log("preload")
+  }
+}
+
 const endTrial = {
   type: HtmlButtonResponsePlugin,
   stimulus: "<p>¡Gracias por participar!</p>",
@@ -351,6 +369,7 @@ const endTrial = {
 const timeline = [
   idTrial,
   questionnaireTrial,
+  preloadTrial,
   audioTestLoop,
   // rest of timeline pushed dynamically by questionnaireTrial
 ];

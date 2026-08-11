@@ -15,6 +15,7 @@
   "dependencies": {
     "@jspsych/plugin-audio-button-response": "^2.1.1",
     "@jspsych/plugin-html-button-response": "^2.1.0",
+    "@jspsych/plugin-preload": "^2.1.0",
     "@jspsych/plugin-survey-html-form": "^2.1.0",
     "@jspsych/plugin-survey-text": "^2.1.1",
     "@jspsych/plugin-video-button-response": "^2.1.1",
