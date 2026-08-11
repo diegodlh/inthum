@@ -349,10 +349,7 @@ const preloadTrial = {
   auto_preload: true,
   images: [] as string[],
   audio: [] as string[],
-  video: [] as string[],
-  on_start: (trial: any) => {
-    console.log("preload")
-  }
+  video: [] as string[]
 }
 
 const endTrial = {
