@@ -313,7 +313,7 @@ const audioTestLoop = {
   timeline: [
     {
       type: AudioButtonResponsePlugin,
-      stimulus: "/audio/audioTest.mp3",
+      stimulus: "audio/audioTest.mp3",
       choices: [ "SI", "NO" ],
       response_allowed_while_playing: false,
       on_load: () => {
