@@ -11,6 +11,7 @@ import "./style.css";
 
 // TODO: we may need trial ids
 // TODO: try to remove "any" types
+// TODO: add finish shortcut
 
 class Introduction  {
   node: any;
@@ -54,14 +55,23 @@ let id = "";
 let questionnaire = "";
 const jsPsych = initJsPsych();
 
-function getBlockTimeline(introTrial: any, trials: any) {
+function getBlockTimeline(
+  introTrial: any,
+  trials: any[],
+  testTrials?: any[]
+) {
   const timeline = [];
   
   // add block intro
   timeline.push(new Introduction(introTrial).node);
 
+  // add test trials
+  if (testTrials) {
+    timeline.push(...testTrials);
+  }
+
   // add block trials in random order
-  timeline.push(jsPsych.randomization.shuffle(trials));
+  timeline.push(...jsPsych.randomization.shuffle(trials));
 
   return timeline;
 }
@@ -101,6 +111,52 @@ const LIKERT_CHOICES: Record<string, string[]> = {
     "Seguido",
     "Casi siempre"
   ]
+}
+function getLikertTrial(
+  question: string,
+  scale: string,
+  audioPath?: string
+) {
+  const trial: TrialType<PluginInfo> = {
+    type: SurveyHtmlFormPlugin,
+    preamble: `<p>${question}</p>`,
+    html: getLikertHtml(LIKERT_CHOICES[scale]),
+    button_label: "CONTINUAR",
+    on_finish: (data: any) => {
+      data.stimulus = question;
+    }
+  };
+  if (scale == "similarity") {
+    trial.preamble += "<p>¿Cuánto se parece esto a vos?</p>";
+  };
+  if (audioPath) {
+    preloadTrial.audio.push(audioPath);
+    trial.on_load = async () => {
+      const form = document.querySelector<HTMLFormElement>(
+        "#jspsych-survey-html-form"
+      );
+      if (!form) return;
+
+      const radioInputs = form.querySelectorAll<HTMLInputElement>(
+        'input[type="radio"]'
+      );
+      const submitButton = form.querySelector<HTMLButtonElement>(
+        'input[type="submit"]'
+      );
+
+      radioInputs.forEach(input => input.disabled = true);
+      if (submitButton) submitButton.disabled = true;
+
+      const audio = await jsPsych.pluginAPI.getAudioPlayer(audioPath);
+      audio.play();
+      audio.addEventListener("ended", () => {
+        radioInputs.forEach(input => input.disabled = false);
+        if (submitButton) submitButton.disabled = false;
+      });
+    };
+  };
+
+  return trial;
 }
 
 function prependPreamble(preamble: string) {
@@ -168,44 +224,7 @@ Cuando respondas mis preguntas, quiero que pienses en las cosas que sí tienen u
       const question = questions[i];
       const audioPath = `audio/inthum/${block_name}_${i}.mp3`;
       preloadTrial.audio.push(audioPath);
-      const trial = {
-        type: SurveyHtmlFormPlugin,
-        preamble: `<p>${question}</p>`,
-        stimulus: "bleh",
-        html: getLikertHtml(LIKERT_CHOICES[block_name]),
-        button_label: "CONTINUAR",
-        on_load: async () => {
-          const form = document.querySelector<HTMLFormElement>(
-            "#jspsych-survey-html-form"
-          );
-          if (!form) return;
-          
-          const radioInputs = form.querySelectorAll<HTMLInputElement>(
-            'input[type="radio"]'
-          );
-          const submitButton = form.querySelector<HTMLButtonElement>(
-            'input[type="submit"]'
-          );
-
-          radioInputs.forEach(input => input.disabled = true);
-          if (submitButton) submitButton.disabled = true;
-
-          const audio = await jsPsych.pluginAPI.getAudioPlayer(audioPath);
-          audio.play();
-          audio.addEventListener("ended", () => {
-            radioInputs.forEach(input => input.disabled = false);
-            if (submitButton) submitButton.disabled = false;
-          });
-        },
-        on_finish: (data: any) => {
-          data.stimulus = question;
-        }
-      }
-
-      if (block_name == "similarity") {
-        trial.preamble += "<p>¿Cuánto se parece esto a vos?</p>";
-      }
-
+      const trial = getLikertTrial(question, block_name, audioPath);
       trials.push(trial);
     }
 
@@ -224,7 +243,7 @@ function getCuriosityTimeline() {
       "Cuando algo me sorprende, quiero saber más sobre eso.",
       "Disfruto descubrir cosas nuevas."
     ]
-  }
+  };
 
   const timeline = [];
 
@@ -232,14 +251,14 @@ function getCuriosityTimeline() {
   timeline.push(new Introduction({
     type: AudioButtonResponsePlugin,
     stimulus: `audio/curiosity/intro.mp3`,
-    prompt: `
-Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a pedir que elijas cuánto se parece cada una a vos.
-`,
     choices: [ "CONTINUAR "],
-    response_allowed_while_playing: false
+    response_allowed_while_playing: false,
+    on_load: () => {
+      prependPreamble(`<p>
+Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a pedir que elijas cuánto se parece cada una a vos.
+      </p>`);
+    }
   }).node);
-
-  // add test trial
 
   // add block
   const block_name = "similarity";
@@ -252,20 +271,30 @@ Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a p
     response_allowed_while_playing: false
   };
 
+  // add test trials
+  const testTrials = [];
+  testTrials.push(getLikertTrial(
+    'Empecemos con una de prueba. Escucha a la siguiente oración: "Me encanta el chocolate".',
+    block_name,
+    `audio/curiosity/${block_name}_test.mp3`
+  ));
+  testTrials.push({
+    type: HtmlButtonResponsePlugin,
+    stimulus: "<p>Ahora sí, ¡empecemos!</p>",
+    choices: [ "CONTINUAR" ]
+  });
+
+  // add real trials
   const trials = [];
   const questions = QUESTIONS[block_name];
   for (let i = 0; i < questions.length; i++) {
-    const trial = {
-      type: SurveyHtmlFormPlugin,
-      preamble: `<p>${questions[i]}</p>`,
-      html: getLikertHtml(LIKERT_CHOICES[block_name]),
-      button_label: "CONTINUAR",
-      // add audio playback
-    }
+    const question = questions[i];
+    const audioPath = `audio/curiosity/${block_name}_${i}.mp3`;
+    const trial = getLikertTrial(question, block_name, audioPath);
     trials.push(trial);
   }
 
-  timeline.push(...getBlockTimeline(introTrial, trials));
+  timeline.push(...getBlockTimeline(introTrial, trials, testTrials));
   
   return timeline;
 }
