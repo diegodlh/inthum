@@ -192,7 +192,7 @@ function getIntHumTimeline() {
   // add questionnaire intro node
   timeline.push(new Introduction({
     type: AudioButtonResponsePlugin,
-    stimulus: `audio/inthum/intro.mp3`,
+    stimulus: `audio/inthum/intro.m4a`,
     choices: [ "CONTINUAR "],
     response_allowed_while_playing: false,
     on_load: () => {
@@ -222,7 +222,7 @@ Cuando respondas mis preguntas, quiero que pienses en las cosas que sí tienen u
     const questions = QUESTIONS[block_name];
     for (let i = 0; i < questions.length; i++) {
       const question = questions[i];
-      const audioPath = `audio/inthum/${block_name}_${i}.mp3`;
+      const audioPath = `audio/inthum/${block_name}_${i}.m4a`;
       preloadTrial.audio.push(audioPath);
       const trial = getLikertTrial(question, block_name, audioPath);
       trials.push(trial);
@@ -250,7 +250,7 @@ function getCuriosityTimeline() {
   // add questionnaire intro node
   timeline.push(new Introduction({
     type: AudioButtonResponsePlugin,
-    stimulus: `audio/curiosity/intro.mp3`,
+    stimulus: `audio/curiosity/intro.m4a`,
     choices: [ "CONTINUAR "],
     response_allowed_while_playing: false,
     on_load: () => {
@@ -276,7 +276,7 @@ Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a p
   testTrials.push(getLikertTrial(
     'Empecemos con una de prueba. Escucha a la siguiente oración: "Me encanta el chocolate".',
     block_name,
-    `audio/curiosity/${block_name}_test.mp3`
+    `audio/curiosity/${block_name}_test.m4a`
   ));
   testTrials.push({
     type: HtmlButtonResponsePlugin,
@@ -289,7 +289,7 @@ Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a p
   const questions = QUESTIONS[block_name];
   for (let i = 0; i < questions.length; i++) {
     const question = questions[i];
-    const audioPath = `audio/curiosity/${block_name}_${i}.mp3`;
+    const audioPath = `audio/curiosity/${block_name}_${i}.m4a`;
     const trial = getLikertTrial(question, block_name, audioPath);
     trials.push(trial);
   }
@@ -349,7 +349,7 @@ const audioTestLoop = {
   timeline: [
     {
       type: AudioButtonResponsePlugin,
-      stimulus: "audio/audioTest.mp3",
+      stimulus: "audio/audioTest.m4a",
       choices: [ "SI", "NO" ],
       response_allowed_while_playing: false,
       on_load: () => {
