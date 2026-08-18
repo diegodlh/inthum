@@ -268,6 +268,7 @@ Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a p
     stimulus: [
       `video/curiosity/${block_name}_intro.mp4`
     ],
+    width: 720,
     choices: [ "CONTINUAR" ],
     response_allowed_while_playing: false
   };
