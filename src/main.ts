@@ -41,7 +41,7 @@ class Introduction  {
         {
           timeline: [{
             type: HtmlButtonResponsePlugin,
-            stimulus: "<p>No te preocupes, sigamos. Después de que lea la primera pregunta, avísame si todavía no se entiende.</p>",
+            stimulus: "<p>No te preocupes, sigamos. Después de que lea la primera pregunta, avisale a la persona a cargo si todavía no se entiende.</p>",
             choices: [ "CONTINUAR" ]
           }],
           conditional_function: () => !this.understood
@@ -173,17 +173,17 @@ function getIntHumTimeline() {
   const QUESTIONS: Record<string, string[]> = {
     "similarity": [
       "Es importante pensar si mis ideas son correctas o equivocadas.",
-      "Cuando alguien dice que estoy equivocado/a, trato de entender por qué piensa que estoy equivocado/a.",
+      "Cuando alguien dice que estoy equivocado, trato de entender por qué piensa que estoy equivocado.",
       "Escucho las ideas de otras personas porque pueden saber cosas que yo no sé.",
       "Cuando resuelvo un problema difícil, aprendo mucho de personas que tienen ideas diferentes a las mías.",
-      "Cuando me doy cuenta de que estaba equivocado/a en algo, cambio de opinión.",
-      "Probablemente cambiaría mi idea si aprendo algo nuevo que muestra que estoy equivocado/a."
+      "Cuando me doy cuenta de que estaba equivocado en algo, cambio de opinión.",
+      "Probablemente cambiaría mi idea si aprendo algo nuevo que muestra que estoy equivocado."
     ],
     "frequency": [
       "¿Cuán seguido pensás sobre tus ideas para ver si realmente son correctas?",
       "¿Cuán seguido pensás sobre si tus ideas son correctas o incorrectas?",
       "¿Cuán seguido escuchar las ideas de otras personas te da ideas nuevas?",
-      "¿Cuán seguido cambiás de opinión cuando te das cuenta de que estás equivocado/a?"
+      "¿Cuán seguido cambiás de opinión cuando te das cuenta de que estás equivocado?"
     ]
   }
 
