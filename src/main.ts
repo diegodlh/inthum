@@ -214,6 +214,7 @@ Cuando respondas mis preguntas, quiero que pienses en las cosas que sí tienen u
       stimulus: [
         `video/inthum/${block_name}_intro_${b}.mp4`
       ],
+      width: 720,
       choices: [ "CONTINUAR" ],
       response_allowed_while_playing: false
     };
