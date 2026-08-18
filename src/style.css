@@ -5,6 +5,7 @@
 }
 
 .choice {
+  flex: 1; /* all choices have the same width in the choices container */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -13,6 +14,7 @@
 }
 
 .choice img {
+  margin-top: auto; /* all images aligned at the bottom */
   width: 5vw;
   /* max-width: 500px; */
   height: auto;
