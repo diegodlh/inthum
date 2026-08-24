@@ -22,9 +22,13 @@ class Introduction  {
       timeline: [
         trial,
         {
-          type: HtmlButtonResponsePlugin,
-          stimulus: "¿Se entiende esto?",
+          type: AudioButtonResponsePlugin,
+          stimulus: "audio/understood.m4a",
           choices: [ "SI", "NO" ],
+          response_allowed_while_playing: test ? true : false,
+          on_load: () => {
+            prependPreamble("¿Se entiende esto?");
+          },
           on_finish: (data: any) => {
             this.understood = data.response == 0; // SI
           }
@@ -40,9 +44,15 @@ class Introduction  {
         },
         {
           timeline: [{
-            type: HtmlButtonResponsePlugin,
-            stimulus: "<p>No te preocupes, sigamos. Después de que lea la primera pregunta, avisale a la persona a cargo si todavía no se entiende.</p>",
-            choices: [ "CONTINUAR" ]
+            type: AudioButtonResponsePlugin,
+            stimulus: "audio/proceed.m4a",
+            choices: [ "CONTINUAR" ],
+            response_allowed_while_playing: test ? true : false,
+            on_load: () => {
+              prependPreamble(`<p>
+No te preocupes, sigamos. Después de que lea la primera pregunta, avisale a la persona a cargo si todavía no se entiende.
+              </p>`);
+            },
           }],
           conditional_function: () => !this.understood
         }
@@ -61,6 +71,7 @@ const jsPsych = initJsPsych();
 
 function getBlockTimeline(
   introTrial: any,
+  startTrial: any,
   trials: any[],
   testTrials?: any[]
 ) {
@@ -73,6 +84,9 @@ function getBlockTimeline(
   if (testTrials) {
     timeline.push(...testTrials);
   }
+
+  // add start trial
+  timeline.push(startTrial);
 
   // add block trials in random order
   timeline.push(...jsPsych.randomization.shuffle(trials));
@@ -217,6 +231,18 @@ Cuando respondas mis preguntas, quiero que pienses en las cosas que sí tienen u
     }
   }).node);
 
+  const startTrial: TrialType<PluginInfo> = {
+    type: AudioButtonResponsePlugin,
+    stimulus: "audio/inthum/start.m4a",
+    choices: [ "CONTINUAR" ],
+    response_allowed_while_playing: test ? true : false,
+    on_load: () => {
+      prependPreamble(`<p>
+¡Empecemos! Para las preguntas que te voy a hacer ahora, no hay respuestas correctas o incorrectas, solamente nos interesa saber qué pensas vos.
+      </p>`);
+    }
+  };
+
   // random choose which block will go first
   const block_names = jsPsych.randomization.shuffle(["similarity", "frequency"]);
   for (const [b, block_name] of block_names.entries()) {
@@ -241,7 +267,7 @@ Cuando respondas mis preguntas, quiero que pienses en las cosas que sí tienen u
       trials.push(trial);
     }
 
-    timeline.push(...getBlockTimeline(introTrial, trials));
+    timeline.push(...getBlockTimeline(introTrial, startTrial, trials));
   }
 
   return timeline;
@@ -285,6 +311,16 @@ Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a p
     response_allowed_while_playing: test ? true : false
   };
 
+  const startTrial = {
+    type: AudioButtonResponsePlugin,
+    stimulus: "audio/curiosity/start.m4a",
+    choices: [ "CONTINUAR" ],
+    response_allowed_while_playing: test ? true : false,
+    on_load: () => {
+      prependPreamble("<p>Ahora sí, ¡empecemos!</p>")
+    }
+  };
+
   // add test trials
   const testTrials = [];
   testTrials.push(getLikertTrial(
@@ -292,11 +328,6 @@ Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a p
     block_name,
     `audio/curiosity/${block_name}_test.m4a`
   ));
-  testTrials.push({
-    type: HtmlButtonResponsePlugin,
-    stimulus: "<p>Ahora sí, ¡empecemos!</p>",
-    choices: [ "CONTINUAR" ]
-  });
 
   // add real trials
   const trials = [];
@@ -308,7 +339,7 @@ Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a p
     trials.push(trial);
   }
 
-  timeline.push(...getBlockTimeline(introTrial, trials, testTrials));
+  timeline.push(...getBlockTimeline(introTrial, startTrial, trials, testTrials));
   
   return timeline;
 }
@@ -369,14 +400,18 @@ const audioTestLoop = {
       response_allowed_while_playing: () => { return test ? true : false },
       on_load: () => {
         prependPreamble("<p>¡Hola! ¿Me escuchas bien?</p>")
-      }      
+      }
     },
     {
       timeline: [{
-        type: HtmlButtonResponsePlugin,
-        stimulus: "<p>Pedile ayuda a la persona a cargo</p>",
+        type: AudioButtonResponsePlugin,
+        stimulus: "audio/help.m4a",
         choices: [ "CONTINUAR" ],
+        response_allowed_while_playing: test ? true : false,
         enable_button_after: 3000,
+        on_load: () => {
+          prependPreamble("<p>Pedile ayuda a la persona a cargo</p>");
+        }
       }],
       conditional_function: () => {
         return jsPsych.data.getLastTrialData().values()[0].response == 1;
@@ -397,10 +432,11 @@ const preloadTrial = {
 }
 
 const endTrial = {
-  type: HtmlButtonResponsePlugin,
-  stimulus: "<p>¡Gracias por participar!</p>",
+  type: AudioButtonResponsePlugin,
+  stimulus: "audio/thanks.m4a",
   choices: [],
   on_load() {
+    prependPreamble("<p>¡Gracias por participar!</p>");
     jsPsych.data.get().localSave(
       "csv",
       `${id}_${questionnaire}_${Date.now()}.csv`);
