@@ -53,6 +53,10 @@ class Introduction  {
 
 let id = "";
 let questionnaire = "";
+
+// tracks whether session is test (i.e., mock) session
+let test = false;
+
 const jsPsych = initJsPsych();
 
 function getBlockTimeline(
@@ -131,6 +135,7 @@ function getLikertTrial(
   };
   if (audioPath) {
     preloadTrial.audio.push(audioPath);
+    let audio: Awaited<ReturnType<typeof jsPsych.pluginAPI.getAudioPlayer>>;
     trial.on_load = async () => {
       const form = document.querySelector<HTMLFormElement>(
         "#jspsych-survey-html-form"
@@ -144,16 +149,23 @@ function getLikertTrial(
         'input[type="submit"]'
       );
 
-      radioInputs.forEach(input => input.disabled = true);
-      if (submitButton) submitButton.disabled = true;
+      radioInputs.forEach(input => input.disabled = !test ? true : false);
+      if (submitButton) submitButton.disabled = !test ? true : false;
 
-      const audio = await jsPsych.pluginAPI.getAudioPlayer(audioPath);
+      audio = await jsPsych.pluginAPI.getAudioPlayer(audioPath);
       audio.play();
       audio.addEventListener("ended", () => {
         radioInputs.forEach(input => input.disabled = false);
         if (submitButton) submitButton.disabled = false;
       });
     };
+    trial.on_finish = () => {
+      // in cases where trial can finish before audio has finished playing
+      // (e.g., while testing), stop audio before proceeding to the next trial.
+      audio.stop();
+
+      // TODO: remove "ended" event listener from audio object
+    }
   };
 
   return trial;
@@ -194,7 +206,7 @@ function getIntHumTimeline() {
     type: AudioButtonResponsePlugin,
     stimulus: `audio/inthum/intro.m4a`,
     choices: [ "CONTINUAR "],
-    response_allowed_while_playing: false,
+    response_allowed_while_playing: test ? true : false,
     on_load: () => {
       prependPreamble(`<p>
 Los niños y adultos piensan sobre un montón de cosas. Algunas de estas cosas en las que piensan no tienen una respuesta correcta o incorrecta, como por ejemplo cuál es el mejor tipo de fruta.
@@ -216,7 +228,7 @@ Cuando respondas mis preguntas, quiero que pienses en las cosas que sí tienen u
       ],
       width: 720,
       choices: [ "CONTINUAR" ],
-      response_allowed_while_playing: false
+      response_allowed_while_playing: test ? true : false
     };
 
     const trials = [];
@@ -253,7 +265,7 @@ function getCuriosityTimeline() {
     type: AudioButtonResponsePlugin,
     stimulus: `audio/curiosity/intro.m4a`,
     choices: [ "CONTINUAR "],
-    response_allowed_while_playing: false,
+    response_allowed_while_playing: test ? true : false,
     on_load: () => {
       prependPreamble(`<p>
 Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a pedir que elijas cuánto se parece cada una a vos.
@@ -270,7 +282,7 @@ Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a p
     ],
     width: 720,
     choices: [ "CONTINUAR" ],
-    response_allowed_while_playing: false
+    response_allowed_while_playing: test ? true : false
   };
 
   // add test trials
@@ -317,6 +329,7 @@ const idTrial: TrialType<PluginInfo> = {
   ],
   on_finish: (data) => {
     id = data.response.id;
+    test = id === "test";
   }
 }
 
@@ -353,7 +366,7 @@ const audioTestLoop = {
       type: AudioButtonResponsePlugin,
       stimulus: "audio/audioTest.m4a",
       choices: [ "SI", "NO" ],
-      response_allowed_while_playing: false,
+      response_allowed_while_playing: () => { return test ? true : false },
       on_load: () => {
         prependPreamble("<p>¡Hola! ¿Me escuchas bien?</p>")
       }      
