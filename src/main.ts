@@ -239,18 +239,13 @@ function getIntHumTimeline() {
 
   // add questionnaire intro node
   timeline.push(new Introduction({
-    type: AudioButtonResponsePlugin,
-    stimulus: `audio/inthum/intro.m4a`,
-    choices: [ "CONTINUAR "],
-    response_allowed_while_playing: test ? true : false,
-    on_load: () => {
-      prependPreamble(`<p>
-Los niños y adultos piensan sobre un montón de cosas. Algunas de estas cosas en las que piensan no tienen una respuesta correcta o incorrecta, como por ejemplo cuál es el mejor tipo de fruta.
-Pero muchas cosas en las que piensan sí tienen una respuesta correcta o incorrecta, aunque todavía no sepamos cuál es esa respuesta, como qué pasó en un momento particular de la historia, o qué intentan descubrir científicos en sus experimentos.
-Este tipo de preguntas tienen respuestas correctas o incorrectas, porque algunas respuestas se basan en mejor información que otras respuestas.
-Cuando respondas mis preguntas, quiero que pienses en las cosas que sí tienen una respuesta correcta o incorrecta.
-      </p>`);
-    }
+    type: VideoButtonResponsePlugin,
+    stimulus: [
+      `video/inthum/intro.mp4`
+    ],
+    width: 720,
+    choices: [ "CONTINUAR" ],
+    response_allowed_while_playing: test ? true : false
   }).node);
 
   const startTrial: TrialType<PluginInfo> = {
