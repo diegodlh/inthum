@@ -150,6 +150,15 @@ function getLikertTrial(
   if (audioPath) {
     preloadTrial.audio.push(audioPath);
     let audio: Awaited<ReturnType<typeof jsPsych.pluginAPI.getAudioPlayer>>;
+    let audioEndedListener: EventListener;
+
+    // reminder audio
+    const hintAudioPath = "audio/hint.m4a";
+    preloadTrial.audio.push(hintAudioPath);
+    let hintAudio: Awaited<ReturnType<typeof jsPsych.pluginAPI.getAudioPlayer>>;
+    let hintAudioStarted = false;
+    let hintTimeoutId: ReturnType<typeof setTimeout> | undefined;
+
     trial.on_load = async () => {
       const form = document.querySelector<HTMLFormElement>(
         "#jspsych-survey-html-form"
@@ -168,17 +177,30 @@ function getLikertTrial(
 
       audio = await jsPsych.pluginAPI.getAudioPlayer(audioPath);
       audio.play();
-      audio.addEventListener("ended", () => {
+
+      hintAudio = await jsPsych.pluginAPI.getAudioPlayer(hintAudioPath);
+      audioEndedListener = () => {
         radioInputs.forEach(input => input.disabled = false);
         if (submitButton) submitButton.disabled = false;
-      });
+
+        hintTimeoutId = setTimeout(async () => {
+          hintAudio.play();
+          hintAudioStarted = true;
+        }, 10000);
+      };
+      audio.addEventListener("ended", audioEndedListener);
     };
     trial.on_finish = () => {
+      // remove "ended" event listener from audio object
+      audio.removeEventListener("ended", audioEndedListener);
+
       // in cases where trial can finish before audio has finished playing
       // (e.g., while testing), stop audio before proceeding to the next trial.
       audio.stop();
 
-      // TODO: remove "ended" event listener from audio object
+      // clear hint timeout and stop hint audio if started
+      clearTimeout(hintTimeoutId);
+      if (hintAudioStarted) hintAudio.stop();
     }
   };
 
