@@ -309,17 +309,17 @@ function getCuriosityTimeline() {
   const timeline = [];
 
   // add questionnaire intro node
-  timeline.push(new Introduction({
-    type: AudioButtonResponsePlugin,
-    stimulus: `audio/curiosity/intro.m4a`,
-    choices: [ "CONTINUAR "],
-    response_allowed_while_playing: test ? true : false,
-    on_load: () => {
-      prependPreamble(`<p>
-Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a pedir que elijas cuánto se parece cada una a vos.
-      </p>`);
-    }
-  }).node);
+//   timeline.push(new Introduction({
+//     type: AudioButtonResponsePlugin,
+//     stimulus: `audio/curiosity/intro.m4a`,
+//     choices: [ "CONTINUAR "],
+//     response_allowed_while_playing: test ? true : false,
+//     on_load: () => {
+//       prependPreamble(`<p>
+// Durante este cuestionario, vas a escuchar algunas frases sobre vos, y te voy a pedir que elijas cuánto se parece cada una a vos.
+//       </p>`);
+//     }
+//   }).node);
 
   // add block
   const block_name = "similarity";
