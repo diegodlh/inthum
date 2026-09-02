@@ -244,7 +244,8 @@ function getIntHumTimeline() {
       `video/inthum/intro.mp4`
     ],
     width: 720,
-    choices: [ "CONTINUAR" ],
+    trial_ends_after_video: true,
+    choices: test ? [ "CONTINUAR" ] : [],
     response_allowed_while_playing: test ? true : false
   }).node);
 
@@ -270,7 +271,8 @@ function getIntHumTimeline() {
         `video/inthum/${block_name}_intro_${b}.mp4`
       ],
       width: 720,
-      choices: [ "CONTINUAR" ],
+      trial_ends_after_video: true,
+      choices: test ? [ "CONTINUAR" ] : [],
       response_allowed_while_playing: test ? true : false
     };
 
@@ -324,7 +326,8 @@ function getCuriosityTimeline() {
       `video/curiosity/${block_name}_intro.mp4`
     ],
     width: 720,
-    choices: [ "CONTINUAR" ],
+    trial_ends_after_video: true,
+    choices: test ? [ "CONTINUAR" ] : [],
     response_allowed_while_playing: test ? true : false
   };
 
