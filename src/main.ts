@@ -9,6 +9,8 @@ import PreloadPlugin from "@jspsych/plugin-preload";
 import "jspsych/css/jspsych.css";
 import "./style.css";
 
+type AudioPlayer = Awaited<ReturnType<typeof jsPsych.pluginAPI.getAudioPlayer>>;
+
 // TODO: we may need trial ids
 // TODO: try to remove "any" types
 // TODO: add finish shortcut
@@ -149,13 +151,13 @@ function getLikertTrial(
   };
   if (audioPath) {
     preloadTrial.audio.push(audioPath);
-    let audio: Awaited<ReturnType<typeof jsPsych.pluginAPI.getAudioPlayer>>;
+    let audio: AudioPlayer;
     let audioEndedListener: EventListener;
 
     // reminder audio
     const hintAudioPath = "audio/hint.m4a";
     preloadTrial.audio.push(hintAudioPath);
-    let hintAudio: Awaited<ReturnType<typeof jsPsych.pluginAPI.getAudioPlayer>>;
+    let hintAudio: AudioPlayer;
     let hintAudioStarted = false;
     let hintTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
@@ -364,8 +366,173 @@ function getCuriosityTimeline() {
   return timeline;
 }
 
+type MetacogAudioProps = {
+  path: string;
+  player?: AudioPlayer;
+  endedListener?: EventListener;
+}
+
+function getMetacogAudioEndedListener(
+  nextButton: HTMLButtonElement,
+  trial: TrialType<PluginInfo>,
+  nextPlayer?: AudioPlayer,
+): EventListener {
+  return () => {
+    nextButton.classList.remove("invisible");
+    if (nextPlayer && !trial.finished) {
+      // using custom finished property because
+      // audio plugin may stop player before we remove ended listener
+      nextPlayer.play()
+    };
+  }
+}
+
+function getMetacogTrial(
+  qid: string,
+  question: string,
+  choiceA: string,
+  choiceB: string
+) {
+  const image = `images/metacog/${qid}.jpg`;
+  preloadTrial.images.push(image);
+
+  const audio: Record<string, MetacogAudioProps> = {
+    question: {
+      path: `audio/metacog/${qid}.m4a`
+    },
+    choiceA: {
+      path: `audio/metacog/${qid}a.m4a`
+    },
+    choiceB: {
+      path: `audio/metacog/${qid}b.m4a`
+    },
+    unknown: {
+      path: "audio/metacog/unknown.m4a"
+    }
+  };
+  for (const props of Object.values(audio)) {
+    preloadTrial.audio.push(props.path);
+  }
+
+  const trial: TrialType<PluginInfo> = {
+    type: AudioButtonResponsePlugin,
+    stimulus: audio.question.path,
+    choices: [
+      choiceA,
+      "No sé",
+      choiceB
+    ],
+    on_load: async () => {
+      prependPreamble(`
+        <img src="${image}" width="720px" />
+        <p>${question}</p>
+      `);
+
+      const buttons = document.querySelectorAll<HTMLButtonElement>(
+        "#jspsych-audio-button-response-btngroup button"
+      );
+      if (!test) {
+        buttons.forEach(button => {
+          button.classList.add("invisible");
+          button.disabled = true;
+        })
+      }
+
+      for (const props of Object.values(audio)) {
+        props.player = await jsPsych.pluginAPI.getAudioPlayer(props.path);
+      }
+
+      audio.question.endedListener = getMetacogAudioEndedListener(
+        buttons[0], trial, audio.choiceA.player
+      );
+      audio.choiceA.endedListener = getMetacogAudioEndedListener(
+        buttons[2], trial, audio.choiceB.player
+      );
+      audio.choiceB.endedListener = getMetacogAudioEndedListener(
+        buttons[1], trial, audio.unknown.player
+      );
+      audio.unknown.endedListener = () => {
+        buttons.forEach(button => {
+          button.disabled = false;
+        });
+      }
+      for (const props of Object.values(audio)) {
+        if (props.player && props.endedListener) {
+          props.player.addEventListener("ended", props.endedListener);
+        }
+      }
+    },
+    finished: false,  // custom finished property
+    on_finish: () => {
+      trial.finished = true;
+      for (const props of Object.values(audio)) {
+        if (props.player) {
+          if (props.endedListener) {
+            props.player.removeEventListener("ended", props.endedListener);
+          }
+
+          try {
+            props.player.stop();
+          } catch {
+            // stopping will fail if never played
+          }
+        }
+      }
+    }
+  }
+  return trial;
+}
+
 function getMetacogTimeline() {
   const timeline: any[] = [];
+
+  const introTrial = {
+    type: AudioButtonResponsePlugin,
+    stimulus: "audio/metacog/intro.m4a",
+    trial_ends_after_audio: true,
+    choices: test ? [ "CONTINUAR" ] : [],
+    response_allowed_while_playing: test ? true : false,
+    on_load: () => {
+      prependPreamble(`
+        <p>Ahora vas a responder algunas preguntas sobre estudiantes de otra escuela.  Siempre va a haber 3 respuestas para elegir. El botón del medio dice “No sé”. Presioná este botón si no sabés cuál de las otras dos respuestas es correcta.</p>
+      `);
+    }
+  };
+
+  const startTrial = {
+    timeline: [
+      {
+        type: AudioButtonResponsePlugin,
+        stimulus: "audio/metacog/start.m4a",
+        choices: [ "SI", "NO" ],
+        response_allowed_while_playing: test ? true : false,
+        on_load: () => {
+          prependPreamble("<p>¿Estás listo?</p>")
+        }
+      }
+    ],
+    loop_function: (data: any) => {
+      return data.values()[0].response == 1
+    }
+  };
+
+  const trials = [
+    getMetacogTrial(
+      "q1",
+      "Fede y Nico están en la clase de la seño Ceci en una actividad de lectura. Mientras que Fede está escuchando el cuento que lee la seño Ceci, otros pensamientos aparecen en su cabeza. Pero cuando Nico escucha el cuento, no le aparecen otros pensamientos en su cabeza. ¿Quién creés que se va a acordar más sobre la historia que leyó la seño Ceci?",
+      "Nico, quien no tuvo otros pensamientos en su cabeza",
+      "Fede, quien tuvo otros pensamientos en su cabeza"
+    ),
+    getMetacogTrial(
+      "q2",
+      "Cande y Martu están en la clase del seño Juan en una actividad de matemáticas. Mientras Cande escucha al seño Juan explicar un problema de matemáticas, otros pensamientos aparecen en su cabeza. Pero cuando Martu escucha al seño Juan, no tiene otros pensamientos en su cabeza. ¿Quién crees que tiene más probabilidades de resolver el problema de matemáticas que el seño Juan escribió en el pizarrón?",
+      "Martu, quien no tuvo otros pensamientos en su cabeza",
+      "Cande, quien tuvo otros pensamientos en su cabeza"
+    )
+  ]
+
+  timeline.push(...getBlockTimeline(introTrial, startTrial, trials));
+
   return timeline;
 }
 

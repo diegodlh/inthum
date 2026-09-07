@@ -23,3 +23,7 @@
 .choice span {
   margin-top: 8px;
 }
+
+.invisible {
+  visibility: hidden;
+}
