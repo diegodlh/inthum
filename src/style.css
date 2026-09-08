@@ -1,3 +1,7 @@
+.jspsych-content-wrapper {
+  background-color: white ;
+}
+
 .choices {
   display: flex;
   gap: 20px;
