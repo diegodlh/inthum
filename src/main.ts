@@ -5,6 +5,7 @@ import AudioButtonResponsePlugin from "@jspsych/plugin-audio-button-response";
 import VideoButtonResponsePlugin from "@jspsych/plugin-video-button-response";
 import SurveyHtmlFormPlugin from "@jspsych/plugin-survey-html-form";
 import PreloadPlugin from "@jspsych/plugin-preload";
+import "./fullscreen";
 
 import "jspsych/css/jspsych.css";
 import "./style.css";
