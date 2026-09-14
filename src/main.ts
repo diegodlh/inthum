@@ -82,7 +82,13 @@ const beforeunloadListener: EventListener = (event) => {
   event.preventDefault();
 }
 
-const jsPsych = initJsPsych();
+const jsPsych = initJsPsych({
+  // Sometimes it was happening that when cache was not available audio files
+  // would be preloaded but they would not be heard, even though browser showed
+  // as if they were being played. Using HTML5 instead of WebAudio seems to fix
+  // it.
+  use_webaudio: false
+});
 
 function getBlockTimeline(
   introTrial: any,
