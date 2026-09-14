@@ -505,7 +505,7 @@ function getMetacogTimeline() {
       {
         type: AudioButtonResponsePlugin,
         stimulus: "audio/metacog/start.m4a",
-        choices: [ "SI", "NO" ],
+        choices: [ "CONTINUAR" ],
         response_allowed_while_playing: test ? true : false,
         on_load: () => {
           prependPreamble("<p>¿Estás listo?</p>")
