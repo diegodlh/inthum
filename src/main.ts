@@ -70,6 +70,18 @@ let questionnaire = "";
 // tracks whether session is test (i.e., mock) session
 let test = false;
 
+function downloadData() {
+  jsPsych.data.get().localSave(
+    "csv",
+    `${id}_${questionnaire}_${Date.now()}.csv`
+  );
+}
+
+const beforeunloadListener: EventListener = (event) => {
+  downloadData()
+  event.preventDefault();
+}
+
 const jsPsych = initJsPsych();
 
 function getBlockTimeline(
@@ -576,6 +588,8 @@ const questionnaireTrial: TrialType<PluginInfo> = {
         break;
     }
     timeline.push(endTrial);
+
+    window.addEventListener("beforeunload", beforeunloadListener);
   }
 }
 
@@ -625,9 +639,8 @@ const endTrial = {
   choices: [],
   on_load() {
     prependPreamble("<p>¡Gracias por participar!</p>");
-    jsPsych.data.get().localSave(
-      "csv",
-      `${id}_${questionnaire}_${Date.now()}.csv`);
+    downloadData();
+    window.removeEventListener("beforeunload", beforeunloadListener);
   },
 };
 
