@@ -264,7 +264,7 @@ function getIntHumTimeline() {
     stimulus: [
       `video/inthum/intro.mp4`
     ],
-    width: 720,
+    width: 900,
     trial_ends_after_video: true,
     choices: test ? [ "CONTINUAR" ] : [],
     response_allowed_while_playing: test ? true : false
@@ -291,7 +291,7 @@ function getIntHumTimeline() {
       stimulus: [
         `video/inthum/${block_name}_intro_${b}.mp4`
       ],
-      width: 720,
+      width: 900,
       trial_ends_after_video: true,
       choices: test ? [ "CONTINUAR" ] : [],
       response_allowed_while_playing: test ? true : false
@@ -346,7 +346,7 @@ function getCuriosityTimeline() {
     stimulus: [
       `video/curiosity/${block_name}_intro.mp4`
     ],
-    width: 720,
+    width: 900,
     trial_ends_after_video: true,
     choices: test ? [ "CONTINUAR" ] : [],
     response_allowed_while_playing: test ? true : false
