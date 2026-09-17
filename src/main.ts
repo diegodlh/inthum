@@ -564,6 +564,12 @@ const idTrial: TrialType<PluginInfo> = {
       required: true
     }
   ],
+  on_load: () => {
+    const input = document.querySelector<HTMLInputElement>("input");
+    if (input) {
+      input.setAttribute("autocapitalize", "none");
+    }
+  },
   on_finish: (data) => {
     id = data.response.id;
     test = id === "test";
