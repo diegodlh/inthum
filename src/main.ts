@@ -160,10 +160,7 @@ function getLikertTrial(
     type: SurveyHtmlFormPlugin,
     preamble: `<p>${question}</p>`,
     html: getLikertHtml(LIKERT_CHOICES[scale]),
-    button_label: "CONTINUAR",
-    on_finish: (data: any) => {
-      data.stimulus = question;
-    }
+    button_label: "CONTINUAR"
   };
   if (scale == "similarity") {
     trial.preamble += "<p>¿Cuánto se parece esto a vos?</p>";
@@ -211,7 +208,9 @@ function getLikertTrial(
       };
       audio.addEventListener("ended", audioEndedListener);
     };
-    trial.on_finish = () => {
+    trial.on_finish = (data: any) => {
+      data.stimulus = question;
+
       // remove "ended" event listener from audio object
       audio.removeEventListener("ended", audioEndedListener);
 
@@ -482,7 +481,8 @@ function getMetacogTrial(
       }
     },
     finished: false,  // custom finished property
-    on_finish: () => {
+    on_finish: (data) => {
+      data.stimulus = question;
       trial.finished = true;
       for (const props of Object.values(audio)) {
         if (props.player) {
