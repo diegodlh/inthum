@@ -177,7 +177,12 @@ function getLikertTrial(
     let hintAudioStarted = false;
     let hintTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
+    let startTime: number;
+    let responseAllowedTime: number;
+
     trial.on_load = async () => {
+      startTime = performance.now();
+
       const form = document.querySelector<HTMLFormElement>(
         "#jspsych-survey-html-form"
       );
@@ -190,8 +195,12 @@ function getLikertTrial(
         'input[type="submit"]'
       );
 
-      radioInputs.forEach(input => input.disabled = !test ? true : false);
-      if (submitButton) submitButton.disabled = !test ? true : false;
+      if (!test) {
+        radioInputs.forEach(input => input.disabled = true);
+        if (submitButton) submitButton.disabled = true;
+      } else {
+        responseAllowedTime = performance.now() - startTime;
+      }
 
       audio = await jsPsych.pluginAPI.getAudioPlayer(audioPath);
       audio.play();
@@ -200,6 +209,9 @@ function getLikertTrial(
       audioEndedListener = () => {
         radioInputs.forEach(input => input.disabled = false);
         if (submitButton) submitButton.disabled = false;
+        if (responseAllowedTime === undefined) {
+          responseAllowedTime = performance.now() - startTime;
+        }
 
         hintTimeoutId = setTimeout(async () => {
           hintAudio.play();
@@ -209,6 +221,7 @@ function getLikertTrial(
       audio.addEventListener("ended", audioEndedListener);
     };
     trial.on_finish = (data: any) => {
+      data.time_allowed = responseAllowedTime;
       data.stimulus = question;
 
       // remove "ended" event listener from audio object
@@ -432,6 +445,9 @@ function getMetacogTrial(
     preloadTrial.audio.push(props.path);
   }
 
+  let startTime: number;
+  let responseAllowedTime: number;
+
   const trial: TrialType<PluginInfo> = {
     type: AudioButtonResponsePlugin,
     stimulus: audio.question.path,
@@ -441,6 +457,8 @@ function getMetacogTrial(
       choiceB
     ],
     on_load: async () => {
+      startTime = performance.now();
+
       prependPreamble(`
         <img src="${image}" width="720px" />
         <p>${question}</p>
@@ -453,7 +471,9 @@ function getMetacogTrial(
         buttons.forEach(button => {
           button.classList.add("invisible");
           button.disabled = true;
-        })
+        });
+      } else {
+        responseAllowedTime = performance.now() - startTime;
       }
 
       for (const props of Object.values(audio)) {
@@ -473,6 +493,9 @@ function getMetacogTrial(
         buttons.forEach(button => {
           button.disabled = false;
         });
+        if (responseAllowedTime === undefined) {
+          responseAllowedTime = performance.now() - startTime;
+        }
       }
       for (const props of Object.values(audio)) {
         if (props.player && props.endedListener) {
@@ -482,6 +505,7 @@ function getMetacogTrial(
     },
     finished: false,  // custom finished property
     on_finish: (data) => {
+      data.time_allowed = responseAllowedTime;
       data.stimulus = question;
       trial.finished = true;
       for (const props of Object.values(audio)) {
