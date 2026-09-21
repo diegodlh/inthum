@@ -506,7 +506,8 @@ function getMetacogTrial(
     finished: false,  // custom finished property
     on_finish: (data) => {
       data.time_allowed = responseAllowedTime;
-      data.stimulus = question;
+      const shortQuestion = question.split(".")[0] + "...";
+      data.stimulus = shortQuestion;
       trial.finished = true;
       for (const props of Object.values(audio)) {
         if (props.player) {
