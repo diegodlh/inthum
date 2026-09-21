@@ -289,7 +289,7 @@ function getIntHumTimeline() {
     response_allowed_while_playing: test ? true : false,
     on_load: () => {
       prependPreamble(`<p>
-¡Empecemos! Para las preguntas que te voy a hacer ahora, no hay respuestas correctas o incorrectas, solamente nos interesa saber qué pensas vos.
+¡Empecemos! Para las preguntas que te voy a hacer ahora, no hay respuestas buenas o malas, solamente nos interesa saber qué pensas vos.
       </p>`);
     }
   };
