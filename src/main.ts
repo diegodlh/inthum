@@ -279,7 +279,17 @@ function getIntHumTimeline() {
     width: 900,
     trial_ends_after_video: true,
     choices: test ? [ "CONTINUAR" ] : [],
-    response_allowed_while_playing: test ? true : false
+    response_allowed_while_playing: test ? true : false,
+    on_load: () => {
+      const video = document.querySelector<HTMLVideoElement>(
+        "video#jspsych-video-button-response-stimulus"
+      )
+      if (video) {
+        video.oncontextmenu = () => {
+          return false;
+        };
+      }
+    }
   }).node);
 
   const startTrial: TrialType<PluginInfo> = {
@@ -306,7 +316,17 @@ function getIntHumTimeline() {
       width: 900,
       trial_ends_after_video: true,
       choices: test ? [ "CONTINUAR" ] : [],
-      response_allowed_while_playing: test ? true : false
+      response_allowed_while_playing: test ? true : false,
+      on_load: () => {
+        const video = document.querySelector<HTMLVideoElement>(
+          "video#jspsych-video-button-response-stimulus"
+        )
+        if (video) {
+          video.oncontextmenu = () => {
+            return false;
+          };
+        }
+      }
     };
 
     const trials = [];
@@ -361,7 +381,17 @@ function getCuriosityTimeline() {
     width: 900,
     trial_ends_after_video: true,
     choices: test ? [ "CONTINUAR" ] : [],
-    response_allowed_while_playing: test ? true : false
+    response_allowed_while_playing: test ? true : false,
+    on_load: () => {
+      const video = document.querySelector<HTMLVideoElement>(
+        "video#jspsych-video-button-response-stimulus"
+      )
+      if (video) {
+        video.oncontextmenu = () => {
+          return false;
+        };
+      }
+    }
   };
 
   const startTrial = {
