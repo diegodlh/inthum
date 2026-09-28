@@ -700,16 +700,28 @@ const preloadTrial = {
   video: [] as string[]
 }
 
-const endTrial = {
+const endTrial: TrialType<PluginInfo> = {
   type: AudioButtonResponsePlugin,
   stimulus: "audio/thanks.m4a",
   choices: [],
   on_load() {
+    // set background color
+    const wrapper = document.querySelector<HTMLDivElement>(
+      "div.jspsych-content-wrapper"
+    );
+    if (wrapper) {
+      wrapper.style.backgroundColor = "#ffcc00";
+    };
+
+    // set preamble and make it clickable
     prependPreamble("<p>¡Gracias por participar!</p>");
     document.querySelector<HTMLDivElement>("div.preamble")?.addEventListener(
       "click", () => { downloadData(); }
     );
+
+    // download data automatically
     downloadData();
+
     window.removeEventListener("beforeunload", beforeunloadListener);
   },
 };
