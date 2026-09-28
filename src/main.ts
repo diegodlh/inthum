@@ -706,6 +706,9 @@ const endTrial = {
   choices: [],
   on_load() {
     prependPreamble("<p>¡Gracias por participar!</p>");
+    document.querySelector<HTMLDivElement>("div.preamble")?.addEventListener(
+      "click", () => { downloadData(); }
+    );
     downloadData();
     window.removeEventListener("beforeunload", beforeunloadListener);
   },
